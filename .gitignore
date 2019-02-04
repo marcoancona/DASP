@@ -1,0 +1,12 @@
+
+\.idea/
+
+*.h5
+
+dasp/__pycache__/
+
+*.pdf
+
+examples/mnist_mlp/\.ipynb_checkpoints/
+
+*.pyc
