@@ -21,17 +21,19 @@ class DASP():
     def run(self, x, steps=None):
         player_generator = self.player_generator
         if player_generator is None:
-            player_generator = DefaultPlayerIterator(x, steps=steps)
-        ks = player_generator.get_steps()
+            player_generator = DefaultPlayerIterator(x)
+        player_generator.set_n_steps(steps)
+        ks = player_generator.get_steps_list()
+        explanation_shape = player_generator.get_explanation_shape()
         print (ks)
 
         result = None
         tile_input = [len(ks)] + (len(x.shape) - 1) * [1]
         tile_mask = [len(ks)*x.shape[0]] + (len(x.shape) - 1) * [1]
 
-        for i, mask in enumerate(player_generator):
-            sys.stdout.write('%s ' % str(i))
-            sys.stdout.flush()
+        for i, (mask, mask_output) in enumerate(player_generator):
+            #sys.stdout.write('%s ' % str(i))
+            #sys.stdout.flush()
 
             #print (mask.shape)
             #print (mask)
@@ -48,19 +50,22 @@ class DASP():
                 raise RuntimeError('nans')
             # Compute Shapley Values as mean of all coalition sizes
             if result is None:
-                result = np.zeros(y.shape + mask.shape)
+                result = np.zeros(y.shape + mask_output.shape)
 
             #print (y.shape)
             shape_mask = [1] * len(y.shape)
-            shape_mask += mask.shape
+            shape_mask += list(mask_output.shape)
 
             shape_out = list(y.shape)
-            shape_out += [1] * len(mask.shape)
+            shape_out += [1] * len(mask_output.shape)
 
             #print (shape_mask)
-            result += np.reshape(y, shape_out) * np.reshape(mask, shape_mask)
+            result += np.reshape(y, shape_out) * mask_output
 
-        return result
+        # trace = timeline.Timeline(step_stats=run_metadata.step_stats)
+        # with open('timeline.ctf.json', 'w') as f:
+        #     f.write(trace.generate_chrome_trace_format())
+        # return result
 
     def _build_dasp_model(self):
         # Create an equivalent probabilistic model.

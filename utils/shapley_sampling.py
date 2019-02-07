@@ -38,7 +38,6 @@ def run_shapley_sampling(model, xs, ys, feat_dims, runs=20, callback=None):
 
     next_callback = 1
     for r in range(runs):
-        # Select randomly 1 feature to test
 
         p = np.random.permutation(n_features)
         x = xs.copy().reshape(run_shape)

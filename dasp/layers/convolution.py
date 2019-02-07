@@ -28,14 +28,14 @@ class ProbConv2DInput(Conv2D):
         n_players =  tf.reduce_sum(tf.ones_like(inputs[0]))
         size_coalition = tf.reduce_sum(mask[0])
         n_players = n_players / size_coalition
-        z = tf.Print(size_coalition, [size_coalition])
-        z2 = tf.Print(n_players, [n_players])
+        #z = tf.Print(size_coalition, [size_coalition])
+        #z2 = tf.Print(n_players, [n_players])
 
         # When I say k, I actually mean k coalition-players so need to compensate for it
         k = tf.expand_dims(tf.expand_dims(k, -1), -1)
 
         ghost = tf.ones_like(inputs) * (1.0 - mask)
-        inputs_i = inputs * (1.0 - mask) + 0.0*(z+z2)
+        inputs_i = inputs * (1.0 - mask) #+ 0.0*(z+z2)
 
         conv = self._conv2d(inputs, self.kernel)
         conv_i = self._conv2d(inputs_i, self.kernel)
@@ -75,7 +75,6 @@ class ProbConv2DInput(Conv2D):
 
         mu1, v1 = filter_activation(self.activation.__name__, mu1, v1)
         mu2, v2 = filter_activation(self.activation.__name__, mu2, v2)
-        print (mu1)
         return tf.stack([mu1, v1, mu2, v2], -1)
 
 

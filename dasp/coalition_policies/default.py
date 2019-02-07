@@ -8,17 +8,21 @@ def spaced_elements(array, numElems = 4):
 
 class AbstractPlayerIterator(ABC):
 
-    def __init__(self, input, steps=None, random=False):
+    def __init__(self, input, random=False):
         self._assert_input_compatibility(input)
         self.input_shape = input.shape[1:]
-        self.steps = steps
         self.random = random
         self.n_players = self._get_number_of_players_from_shape()
         self.permutation = np.array(range(self.n_players), 'int32')
         if random is True:
             self.permutation = np.random.permutation(self.permutation)
         self.i = 0
-        self.kn = steps if steps is not None else self.n_players
+        self.kn = self.n_players
+        self.ks = spaced_elements(range(self.n_players), self.kn)
+
+
+    def set_n_steps(self, steps):
+        self.kn = steps
         self.ks = spaced_elements(range(self.n_players), self.kn)
 
     def get_number_of_players(self):
@@ -30,7 +34,7 @@ class AbstractPlayerIterator(ABC):
     def get_coalition_size(self):
         return 1
 
-    def get_steps(self):
+    def get_steps_list(self):
         return self.ks
 
     def __iter__(self):
@@ -40,7 +44,7 @@ class AbstractPlayerIterator(ABC):
     def __next__(self):
         if self.i == self.n_players:
             raise StopIteration
-        m = self._get_mask_for_index(self.i)
+        m = self._get_masks_for_index(self.i)
         self.i = self.i + 1
         return m
 
@@ -49,7 +53,7 @@ class AbstractPlayerIterator(ABC):
         pass
 
     @abstractmethod
-    def _get_mask_for_index(self, i):
+    def _get_masks_for_index(self, i):
         pass
 
     @abstractmethod
@@ -65,39 +69,53 @@ class DefaultPlayerIterator(AbstractPlayerIterator):
     def _get_number_of_players_from_shape(self):
         return int(np.prod(self.input_shape))
 
-    def _get_mask_for_index(self, i):
+    def _get_masks_for_index(self, i):
         mask = np.zeros(self.n_players, dtype='int32')
         mask[self.permutation[i]] = 1
-        return mask.reshape(self.input_shape)
+        return mask.reshape(self.input_shape), mask.reshape(self.input_shape)
 
 
 
 
 class ImagePlayerIterator(AbstractPlayerIterator):
 
-    def __init__(self, input, steps=None, random=False, merge_channels=False, coalition_patch_size=None):
+    def __init__(self, input, random=False, merge_channels=False, coalition_patch_size=None):
         self.merge_channels = merge_channels
         self.coalition_patch_size = coalition_patch_size
-        super(ImagePlayerIterator, self).__init__(input, steps, random)
+        super(ImagePlayerIterator, self).__init__(input, random)
+
+    def _input_shape_merged(self):
+        return self.input_shape if self.merge_channels is not True else self.input_shape[:-1] + (1,)
 
     def _assert_input_compatibility(self, input):
         assert len(input.shape) == 4, 'ImagePlayerIterator requires an input with 4 dimensions'
 
     def _get_number_of_players_from_shape(self):
-        return int(np.prod(self.input_shape))
+        print (np.prod(self._input_shape_merged()))
+        return np.prod(self._input_shape_merged())
 
-    def _get_mask_for_index(self, i):
+    def _get_masks_for_index(self, i):
         mask = np.zeros(self.n_players, dtype='int32')
         mask[self.permutation[i]] = 1
-        return mask.reshape(self.input_shape)
+        mask = mask.reshape(self._input_shape_merged())
+        mask_input = mask
+        if self.merge_channels:
+            mask_input = np.repeat(mask, self.input_shape[-1], -1)
+        return mask_input, mask
+
+    def get_explanation_shape(self):
+        return self._input_shape_merged()
 
 
 
 def main():
-    iter = DefaultPlayerIterator(np.random.random((1, 12, 4)), random=True)
+    iter = ImagePlayerIterator(np.random.random((1, 2, 2, 3)), merge_channels=True, random=True)
     print (iter.get_number_of_players())
     print (iter.get_explanation_shape())
+    mask = next(iter)
+    print (mask.shape)
     print (next(iter))
+    print (mask[0,0])
 
 if __name__ == "__main__":
     main()
