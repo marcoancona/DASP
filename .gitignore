@@ -10,3 +10,7 @@ dasp/__pycache__/
 examples/mnist_mlp/\.ipynb_checkpoints/
 
 *.pyc
+
+*.pkl
+
+examples/cifar10/\.ipynb_checkpoints/

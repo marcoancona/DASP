@@ -7,6 +7,14 @@ from keras.models import Sequential, Model, load_model
 from keras.layers import Dense, Flatten, Activation, Input, InputLayer, Conv2D, MaxPooling2D, Conv1D, AveragePooling1D, Dropout, Lambda
 from lpdn import convert_to_lpdn
 
+import tensorflow as tf
+from tensorflow.python.client import timeline
+
+# Make your keras model
+# ...
+run_options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+run_metadata = tf.RunMetadata()
+
 class DASP():
     def __init__(self, keras_model, player_generator=None, input_shape=None):
         self.keras_model = keras_model
@@ -65,7 +73,7 @@ class DASP():
         # trace = timeline.Timeline(step_stats=run_metadata.step_stats)
         # with open('timeline.ctf.json', 'w') as f:
         #     f.write(trace.generate_chrome_trace_format())
-        # return result
+        return result
 
     def _build_dasp_model(self):
         # Create an equivalent probabilistic model.
@@ -115,10 +123,59 @@ class DASP():
             y2 = lpdn_layers[i](y2)
 
         # Declare the model
+        #check_numerics = tf.add_check_numerics_ops()
         model = Model(inputs=self.inputs, outputs=[y1,y2])
+        # model.compile(loss='MSE', optimizer='Adam', options=run_options, run_metadata=run_metadata)
 
         # Load weights of original Keras model
         self.keras_model.save_weights('_dasp_tmp.h5')
         model.load_weights('_dasp_tmp.h5', by_name=True)
         model.summary()
         return model
+
+
+def main():
+    import keras
+    from keras.datasets import cifar10
+    from keras.preprocessing.image import ImageDataGenerator
+    from keras.models import Sequential
+    from keras.layers import Dense, Dropout, Activation, Flatten
+    from keras.layers import Conv2D, MaxPooling2D
+    import os
+
+    idx = 1
+    unit_idx = 343 #np.random.randint(2000)
+    kn = 100
+
+    histograms = []
+    stats_mu = []
+    stats_std = []
+    units = []
+
+
+    # The data, split between train and test sets:
+    (x_train, y_train), (x_test, y_test) = cifar10.load_data()
+    print('x_train shape:', x_train.shape)
+    print(x_train.shape[0], 'train samples')
+    print(x_test.shape[0], 'test samples')
+
+    x = np.tile(x_train[0], 1000)
+
+    model = Sequential()
+    model.add(Conv2D(32, (3, 3), padding='same',
+                     input_shape=x_train.shape[1:]))
+
+    y = model.predict(x)
+    print(y.shape)
+
+    T = 100
+    mask_gen = DefaultPlayerIterator(x)
+    mask = None
+    for _ in range(T):
+        mask = next(mask_gen)
+
+
+
+
+if __name__ == '__main__':
+    main()
