@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import scipy
 import datetime
 import os
-from keras.applications import vgg16
 from matplotlib.ticker import FormatStrFormatter
 
 
@@ -16,6 +15,7 @@ COLORS = ["#4e79a7",
           "#e15759",
           "#b07aa1",
           "#f28e2b"]
+
 
 def color_for_label(label):
     l = label.lower()
@@ -41,11 +41,13 @@ def _ensure_dir(path):
     if not os.path.exists(path):
         os.makedirs(path)
 
+
 def get_plot_filename(plot_name, experiment_name):
     folder = "results/" + experiment_name + "/"
     _ensure_dir(folder)
     t = datetime.datetime.now().isoformat()[:-7]
     return folder + plot_name + "_" + experiment_name + "_" + t + ".pdf"
+
 
 def _isiterable(p_object):
     try:
@@ -53,6 +55,7 @@ def _isiterable(p_object):
     except TypeError:
         return False
     return True
+
 
 def plot(data, xi=None, cmap='RdBu_r', axis=plt, percentile=100, dilation=3.0, alpha=0.8):
     dx, dy = 0.05, 0.05
@@ -97,7 +100,6 @@ def plot_attribution_maps(name, xs, attributions, names, idxs=None, percentile=1
     fig, axes = plt.subplots(nrows=rows, ncols=cols, figsize=(12, 2*rows))
     for ax, col in zip(axes[0] if _isiterable(axes[0]) else axes, names):
         ax.set_title(col, fontsize= 14)
-
 
     for i, idx in enumerate(idxs):
         if show_original:
@@ -170,7 +172,6 @@ def _plot_boxplot(plot_data, permuted_names, yaxis, experiment_name):
     ax.set_xticklabels(permuted_names,rotation=0, fontsize=12)
     plt.subplots_adjust(left=0.1, bottom=0.2, right=1, top=0.95, wspace=0.0, hspace=0.0)
     fig.savefig(get_plot_filename(yaxis.split(" ")[0].lower(), experiment_name))
-
 
 
 def plot_mse_comparison(name, attributions, names, gt_idx=None):

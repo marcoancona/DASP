@@ -1,13 +1,9 @@
 import numpy as np
-import h5py
-import math, os, operator, csv, pickle
+import os
 import matplotlib.pyplot as plt
-from matplotlib.ticker import ScalarFormatter, FormatStrFormatter
-from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
-import plotly.graph_objs as go
-from PIL import Image
+from matplotlib.ticker import ScalarFormatter
+
 import scipy.misc
-from .max_variation import plot_max_variation
 
 CORRUPTION_MAX_RATIO = 1
 REMOVE_VALUE = 0
@@ -16,9 +12,11 @@ RANDOM_TESTS = 3
 SAVE_IMAGES = 0
 path = None
 
+
 def _ensure_dir(path):
     if not os.path.exists(path):
         os.makedirs(path)
+
 
 def _run_model(x, y, model, mode):
     if mode == 'accuracy':
@@ -51,7 +49,6 @@ def _corrupt_loop(eval_x, eval_y, rank, model, feat_per_step, mode, method_name=
         x = ~batch_mask * x + batch_mask * x_neg
         if i < SAVE_IMAGES:
             scipy.misc.imsave(path+'/img_%s_%3d.png' % (method_name if method_name is not None else '', i), x[0])
-            #Image.fromarray(x[0]).save(path+'/img_%s_%3d.png' % (method_name if method_name is not None else '', i))
         metric.append(_run_model(x, eval_y, model, mode=mode))
     return np.array(metric)
 
@@ -92,16 +89,13 @@ def run_robustness_test(model, x, y, original_maps, names, task_name, feat_per_s
     msizes = [4, 4, 3, 3, 5, 3, 3, 3, 3]
 
     plot_data_min = {}
-
     plot_data_other = {}
 
     for map, name in zip(maps, names):
         map = map.reshape(map_shape)
         map_flat = map.reshape(batch_size, -1)
         rank_max = np.argsort(np.argsort(map_flat * -1.0, axis=1), axis=1).reshape(map_shape)
-        #rank_min = np.argsort(np.argsort(map_flat, axis=1), axis=1).reshape(map_shape)
         plot_data_max[name] = _corrupt_loop(x, y, rank_max, model, feat_per_step, mode=mode, method_name=name)
-        #plot_data_min[name] = _corrupt_loop(x, y, rank_min, model, feat_per_step, mode=mode, method_name=name)
 
     # Do random
     rand_results = []
@@ -134,8 +128,6 @@ def run_robustness_test(model, x, y, original_maps, names, task_name, feat_per_s
                      linewidth=3,
                      alpha=1)
 
-
-    #plt.title('Title')
     frm = ScalarFormatter()
     frm.set_scientific(False)
     ax = plt.gca()
@@ -145,12 +137,9 @@ def run_robustness_test(model, x, y, original_maps, names, task_name, feat_per_s
     ax.spines['bottom'].set_visible(False)
     ax.spines['left'].set_visible(False)
     ax.yaxis.grid(True)
-    plt.subplots_adjust(bottom=0.25) # can be used even with single plots to make some room
-    fig.text(0.5, 0.14, 'Features removed (%)', ha='center', va='center', fontsize=13)
+    plt.subplots_adjust(bottom=0.30)
+    fig.text(0.5, 0.22, 'Features removed (%)', ha='center', va='center', fontsize=13)
     fig.text(0.08, 0.55, '$Δf_c(x)$', ha='center', va='center', rotation='vertical', fontsize=13)
     fig.legend(names + ['Random'], loc='lower center', fontsize=12, ncol=5, bbox_to_anchor=(0, 0, 1, 1),
                          bbox_transform=plt.gcf().transFigure)
     plt.show()
-
-    plot_max_variation(plot_data_max, names)
-

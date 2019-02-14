@@ -1,19 +1,15 @@
-from skimage import feature, transform
 import numpy as np
 import matplotlib.pyplot as plt
-import scipy
-import datetime
-import os
-from keras.applications import vgg16
-from matplotlib.ticker import FormatStrFormatter
-from .utils import COLORS, color_for_label, get_plot_filename, _compare_attributions
+from .utils import color_for_label, get_plot_filename, _compare_attributions
 
 
 def convergence_comparison_rmse(experiment_name, series, series_names, x_ticks, gt, max_tick=None):
     return convergence_comparison(experiment_name, series, series_names, x_ticks, gt, 'mse', max_tick)
 
+
 def convergence_comparison_corr(experiment_name, series, series_names, x_ticks, gt, max_tick=None):
     return convergence_comparison(experiment_name, series, series_names, x_ticks, gt, 'corr', max_tick)
+
 
 def convergence_comparison(experiment_name, series, series_names, x_ticks, gt, metric, max_tick=None):
     fig = plt.figure(figsize=(6, 3))
