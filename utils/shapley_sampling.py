@@ -1,7 +1,7 @@
 import numpy as np
-from keras_applications import inception_v3
 # Implementation of "Polynomial calculation of the Shapley value based on sampling"
 # https://www.sciencedirect.com/science/article/pii/S0305054808000804
+
 
 def _finalize(result, runs, shape):
     shapley = result.copy() / runs
