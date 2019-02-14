@@ -1,9 +1,7 @@
 import tensorflow as tf
 from keras import backend as K
 from keras.layers import Dense
-import numpy as np
 from lpdn import filter_activation
-
 
 
 class ProbDenseInput(Dense):
@@ -26,25 +24,22 @@ class ProbDenseInput(Dense):
 
         ghost = tf.ones_like(inputs) * (1.0 - mask)
         inputs_i = inputs * (1.0 - mask)
-        #z = tf.Print(mask, [tf.reduce_sum(mask, 1), tf.shape(mask)])
 
-        dot = K.dot(inputs, self.kernel) #+ 0.0*tf.reduce_sum(z)
+        dot = K.dot(inputs, self.kernel)
         dot_i = K.dot(inputs_i, self.kernel)
         dot_mask = K.dot(ghost, tf.ones_like(self.kernel))
         dot_v = K.dot(inputs_i**2, self.kernel**2)
         # Compute mean without feature i
         mu = dot_i / dot_mask
         v = dot_v / dot_mask - mu ** 2
-        #z = tf.Print(mu, [tf.reduce_mean(mu, 1), tf.reduce_mean(mu**2, 1)])
         # Compensate for number of players in current coalition
-        mu1 = mu * k[0,0] #+ 0.0*z
+        mu1 = mu * k[0,0]
         # Compute mean of the distribution that also includes player i (acting as bias to expectation)
         mu2 = mu1 + (dot - dot_i)
         # Compensate for number or players in the coalition
         v1 = v * k[0,0] * (1.0 - (k[0,0]-1) / (dot_mask - 1))
-        #x = tf.Print(v1, [v1])
         # Set something different than 0 if necessary
-        # v1 = tf.maximum(0.00001, v1)
+        v1 = tf.maximum(0.00001, v1)
         # Since player i is only a bias, at this point the variance of the distribution than
         # includes it is the same
         v2 = tf.identity(v1)
@@ -52,7 +47,6 @@ class ProbDenseInput(Dense):
         if self.use_bias:
             mu1 = K.bias_add(mu1, self.bias, data_format='channels_last')
             mu2 = K.bias_add(mu2, self.bias, data_format='channels_last')
-        print(self.activation.__name__)
 
         mu1, v1 = filter_activation(self.activation.__name__, mu1, v1)
         mu2, v2 = filter_activation(self.activation.__name__, mu2, v2)

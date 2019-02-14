@@ -14,3 +14,5 @@ examples/mnist_mlp/\.ipynb_checkpoints/
 *.pkl
 
 examples/cifar10/\.ipynb_checkpoints/
+
+examples/mnist_cnn/\.ipynb_checkpoints/
