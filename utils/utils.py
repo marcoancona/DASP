@@ -192,7 +192,7 @@ def plot_mse_comparison(name, attributions, names, gt_idx=None):
     _plot_boxplot(plot_data, permuted_names, 'RMSE', name)
 
 
-def plot_kendall_comparison(name, attributions, names, gt_idx=None):
+def plot_correlation_comparison(name, attributions, names, gt_idx=None):
 
     plot_data = _compare_attributions(attributions, metric='corr')
     plot_data = plot_data[gt_idx, :, :]
