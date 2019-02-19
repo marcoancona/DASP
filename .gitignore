@@ -16,3 +16,5 @@ examples/mnist_mlp/\.ipynb_checkpoints/
 examples/cifar10/\.ipynb_checkpoints/
 
 examples/mnist_cnn/\.ipynb_checkpoints/
+
+examples/parkinson/\.ipynb_checkpoints/

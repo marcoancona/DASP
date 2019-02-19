@@ -1,4 +1,5 @@
 """ Visualize the SHAP values with additive force style layouts.
+Credits: https://github.com/slundberg/shap
 """
 
 from __future__ import unicode_literals
