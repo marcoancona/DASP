@@ -80,10 +80,12 @@ class ImagePlayerIterator(AbstractPlayerIterator):
         self.window_shape = window_shape
         assert self.window_shape is not None, "window_shape cannot be None"
         assert len(self.window_shape) == 3, "window_shape must contain 3 elements"
+        assert 1 <= window_shape[-1] <= input.shape[-1], \
+            "last dimension of window_shape must be in range 0..n_input_channels"
         assert window_shape[-1] == input.shape[-1] or window_shape[-1] == 1, \
             "last element of window_shape must be 1 or equal to the last dimension of the input"
-        assert self.window_shape[0] == 1 and self.window_shape[1] == 1, \
-            "Players can only be individual pixels at the moment"
+        assert input.shape[1] % self.window_shape[0] == 0 and input.shape[2] % self.window_shape[1] == 0, \
+            "input dimensions must be multiple of window_shape dimensions"
         super(ImagePlayerIterator, self).__init__(input, random)
 
     def _input_shape_merged(self):
@@ -96,15 +98,34 @@ class ImagePlayerIterator(AbstractPlayerIterator):
         assert len(input.shape) == 4, 'ImagePlayerIterator requires an input with 4 dimensions'
 
     def _get_number_of_players_from_shape(self):
-        return np.prod(self._input_shape_merged())
+        shape = self._input_shape_merged()
+        if self.window_shape[0] > 1:
+            shape[0] = shape[0] / self.window_shape[0]
+        if self.window_shape[1] > 1:
+            shape[1] = shape[1] / self.window_shape[1]
+        print ('nplayers', np.prod(shape, dtype='int32'))
+        return np.prod(shape, dtype='int32')
 
     def _get_masks_for_index(self, i):
-        mask = np.zeros(self.n_players, dtype='int32')
-        mask[self.permutation[i]] = 1
-        mask = mask.reshape(self._input_shape_merged())
-        mask_input = mask
+        mask_input = np.zeros(self.input_shape, dtype='int32')
+        mask = np.zeros(self._input_shape_merged())
+        i = self.permutation[i]
+
+        nrows, ncols = self.input_shape[0] // self.window_shape[0], self.input_shape[1] // self.window_shape[1]
+        row_step = self.window_shape[0]
+        col_step = self.window_shape[1]
+        coalition_size = row_step*col_step
+        row = i // nrows
+        col = i % ncols
+        print (row)
+        print (col)
+
+        mask_input[row*row_step:(1+row)*row_step, col*col_step:(1+col)*col_step] = 1
+        mask[row*row_step:(1+row)*row_step, col*col_step:(1+col)*col_step] = 1. / coalition_size
+
         if self.window_shape[-1] > 1:
-            mask_input = np.repeat(mask, self.input_shape[-1], -1)
+            mask_input = np.repeat(mask_input, self.input_shape[-1], -1)
+
         return mask_input, mask
 
     def get_explanation_shape(self):
@@ -113,14 +134,15 @@ class ImagePlayerIterator(AbstractPlayerIterator):
 #
 #
 # def main():
-#     iter = ImagePlayerIterator(np.random.random((1, 2, 2, 3)), window_shape=(1,1,1))
+#     iter = ImagePlayerIterator(np.random.random((1, 4, 4, 3)), window_shape=(2,2,1))
 #     print (iter.get_number_of_players())
 #     print (iter.get_explanation_shape())
 #     mask, mask_out = next(iter)
 #     print (mask.shape)
 #     print (mask_out.shape)
-#     print (next(iter))
-#     print (mask[0,0])
+#
+#     print(next(iter)[0])
+#     print(next(iter)[0])
 #
 # if __name__ == "__main__":
 #     main()
