@@ -1,6 +1,6 @@
 # Deep Approximate Shapley Propagation
 
-This repository contains the Keras implementation for [Deep Approximate Shapley Propagation (DASP)](https://arxiv.org/abs/1903.10992).
+This repository contains the Keras implementation for Deep Approximate Shapley Propagation (DASP).
 
 The problem of explaining the behavior of deep neural networks has gained a lot of attention over the last years. 
 *Shapley values* as a unique way of assigning relevance scores such that certain desirable properties are satisfied.
