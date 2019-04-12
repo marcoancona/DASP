@@ -6,6 +6,7 @@
 dasp/__pycache__/
 
 *.pdf
+!supplementary/*.pdf
 
 examples/mnist_mlp/\.ipynb_checkpoints/
 
