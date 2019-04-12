@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy
 import datetime
-import os
+import os, re
 from matplotlib.ticker import FormatStrFormatter
 
 
@@ -90,11 +90,14 @@ def plot(data, xi=None, cmap='RdBu_r', axis=plt, percentile=100, dilation=3.0, a
     return axis
 
 
-def plot_attribution_maps(name, xs, attributions, names, idxs=None, percentile=100, dilation=3.0, alpha=0.8, show_original=False):
+def plot_attribution_maps(name, xs, attributions, names, idxs=None, percentile=100, dilation=3.0, alpha=0.8, show_original=False, save_separate=False):
+    print("Save")
+    print(xs.shape)
     if idxs is None:
         idxs = list(range(len(attributions[0])))
     if show_original:
         names.insert(0, 'Input')
+
     rows = len(idxs)
     cols = len(names)
     fig, axes = plt.subplots(nrows=rows, ncols=cols, figsize=(12, 2*rows))
@@ -103,9 +106,21 @@ def plot_attribution_maps(name, xs, attributions, names, idxs=None, percentile=1
 
     for i, idx in enumerate(idxs):
         if show_original:
+            if len(xs.shape) == 4 and xs.shape[-1] == 1:
+                xs = xs[..., 0]
+                plt.set_cmap('Greys_r')
             ax = axes[i, 0] if _isiterable(axes[0]) else axes[0]
             ax.axis('off')
             ax.imshow(xs[idx])
+            if save_separate:
+                fig_save = plt.figure()
+                ax_save = fig_save.add_subplot('111')
+                ax_save.imshow(xs[idx])
+                ax_save.axis('off')
+                fig_save.tight_layout()
+                fig_save.savefig(get_plot_filename(f'sub_{i}_input', name), bbox_inches = "tight")
+                plt.close(fig_save)
+
 
         for j, attribution in enumerate(attributions):
             if show_original:
@@ -113,7 +128,16 @@ def plot_attribution_maps(name, xs, attributions, names, idxs=None, percentile=1
             ax = axes[i, j] if _isiterable(axes[0]) else axes[j]
             attribution_map = attribution[idx]
             original_sample = xs[idx]
+            save_name = re.sub('[^A-Za-z0-9]+', '', names[j])
             plot(attribution_map, original_sample, axis=ax, percentile=percentile, dilation=dilation, alpha=alpha)
+            if save_separate:
+                fig_save = plt.figure()
+                ax_save = fig_save.add_subplot('111')
+                plot(attribution_map, original_sample, axis=ax_save, percentile=percentile, dilation=dilation, alpha=alpha)
+                fig_save.tight_layout()
+                fig_save.savefig(get_plot_filename(f'sub_{i}_{save_name}', name), bbox_inches = "tight")
+                plt.close(fig_save)
+
     fig.tight_layout()
     plt.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0.1, hspace=0.2)
 

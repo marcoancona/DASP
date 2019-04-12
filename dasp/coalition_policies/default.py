@@ -82,8 +82,8 @@ class ImagePlayerIterator(AbstractPlayerIterator):
         assert len(self.window_shape) == 3, "window_shape must contain 3 elements"
         assert 1 <= window_shape[-1] <= input.shape[-1], \
             "last dimension of window_shape must be in range 0..n_input_channels"
-        assert window_shape[-1] == input.shape[-1] or window_shape[-1] == 1, \
-            "last element of window_shape must be 1 or equal to the last dimension of the input"
+        assert window_shape[-1] == input.shape[-1], \
+            "last element of window_shape must be equal to the last dimension of the input"
         assert input.shape[1] % self.window_shape[0] == 0 and input.shape[2] % self.window_shape[1] == 0, \
             "input dimensions must be multiple of window_shape dimensions"
         super(ImagePlayerIterator, self).__init__(input, random)
@@ -117,14 +117,9 @@ class ImagePlayerIterator(AbstractPlayerIterator):
         coalition_size = row_step*col_step
         row = i // nrows
         col = i % ncols
-        print (row)
-        print (col)
 
         mask_input[row*row_step:(1+row)*row_step, col*col_step:(1+col)*col_step] = 1
         mask[row*row_step:(1+row)*row_step, col*col_step:(1+col)*col_step] = 1. / coalition_size
-
-        if self.window_shape[-1] > 1:
-            mask_input = np.repeat(mask_input, self.input_shape[-1], -1)
 
         return mask_input, mask
 

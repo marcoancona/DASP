@@ -43,6 +43,9 @@ class DASP():
         for i, (mask, mask_output) in enumerate(player_generator):
             # Workaround: Keras does not seem to support scalar inputs
             inputs = [np.tile(x, tile_input), np.tile(mask, tile_mask), np.repeat(ks, x.shape[0])]
+            print (tile_input)
+            print(tile_mask)
+            print ([x.shape for x in inputs])
             y1, y2 = self.dasp_model.predict(inputs)
             y1 = y1.reshape(len(ks), x.shape[0], -1, 2)
             y2 = y2.reshape(len(ks), x.shape[0], -1, 2)
