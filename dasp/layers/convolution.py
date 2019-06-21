@@ -116,7 +116,7 @@ class ProbConv1DInput(Conv1D):
 
         # Compensate for number or players in the coalition
         k = conv_count * (k / n_players)
-        v1 = v1 * k  * (1.0 - (k-1) / (conv_count - 1))
+        v1 = v1 * k * (1.0 - (k-1) / (conv_count - 1))
         # Set something different than 0 if necessary
         v1 = K.maximum(0.00001, v1)
         # Since player i is only a bias, at this point the variance of the distribution than

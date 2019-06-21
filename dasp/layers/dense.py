@@ -33,14 +33,14 @@ class ProbDenseInput(Dense):
         mu = dot_i / dot_mask
         v = dot_v / dot_mask - mu ** 2
         # Compensate for number of players in current coalition
-        mu1 = mu * k[0,0]
+        mu1 = mu * k
         # Compute mean of the distribution that also includes player i (acting as bias to expectation)
         mu2 = mu1 + (dot - dot_i)
         # Compensate for number or players in the coalition
-        v1 = v * k[0,0] * (1.0 - (k[0,0]-1) / (dot_mask - 1))
+        v1 = v * k * (1.0 - (k-1) / (dot_mask - 1))
         # Set something different than 0 if necessary
         v1 = tf.maximum(0.00001, v1)
-        # Since player i is only a bias, at this point the variance of the distribution than
+        # Since player i is only a bias, at this point the variance of the distribution that
         # includes it is the same
         v2 = tf.identity(v1)
 

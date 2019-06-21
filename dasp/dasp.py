@@ -23,7 +23,7 @@ class DASP():
         if self.dasp_model is not None:
             self.dasp_model.summary()
 
-    def run(self, x, steps=None):
+    def run(self, x, steps=None, batch_size=32):
         player_generator = self.player_generator
         if player_generator is None:
             player_generator = DefaultPlayerIterator(x)
@@ -41,9 +41,10 @@ class DASP():
         tile_mask = [len(ks)*x.shape[0]] + (len(x.shape) - 1) * [1]
 
         for i, (mask, mask_output) in enumerate(player_generator):
-            # Workaround: Keras does not seem to support scalar inputs
+            # Workaround: as Keras requires the first dimension of the inputs to be the same,
+            # we tile and repeat the input, mask and ks vector to have them aligned.
             inputs = [np.tile(x, tile_input), np.tile(mask, tile_mask), np.repeat(ks, x.shape[0])]
-            y1, y2 = self.dasp_model.predict(inputs)
+            y1, y2 = self.dasp_model.predict(inputs, batch_size=batch_size)
             y1 = y1.reshape(len(ks), x.shape[0], -1, 2)
             y2 = y2.reshape(len(ks), x.shape[0], -1, 2)
             y = np.mean(y2[..., 0] - y1[..., 0], 0)
