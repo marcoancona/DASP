@@ -8,7 +8,7 @@ setuptools.setup(
     version="0.0.1",
     author="Marco Ancona",
     author_email="marco.ancona@inf.ethz.ch",
-    description="Implementation of  Deep Approximate Shapley Propagation for Tensorflow/Keras",
+    description="Implementation of Deep Approximate Shapley Propagation for Tensorflow/Keras",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/marcoancona/DASP",
