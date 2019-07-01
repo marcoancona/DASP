@@ -6,8 +6,16 @@ The problem of explaining the behavior of deep neural networks has gained a lot 
 *Shapley values* as a unique way of assigning relevance scores such that certain desirable properties are satisfied.
 Unfortunately, the exact evaluation of Shapley values is prohibitively expensive, exponential in the number of input features. DASP is a polynomial-time approximation of Shapley values designed for deep neural networks. It relies on uncertainty propagation using [Lightweight Probabilistic Deep Networks (LPDN)](https://arxiv.org/abs/1805.11327) to approximate Shapley values. This libraries relies on a [Keras implementation of such probabilistic framework](https://github.com/marcoancona/LPDN).
 
+## Install
+In your Python 3 environment run:
+```
+pip install git+https://github.com/marcoancona/DASP
+```
+We recommand using a virtual environment. This will install the required [LPDN](https://github.com/marcoancona/LPDN) dependency but will assume `tensorflow`, `keras` and `numpy` are already available.
+
 ## How to use
 Please see the [example folder](https://github.com/marcoancona/DASP/tree/master/examples) for practical usage example and results.
+Notice that to run the example notebooks in a virtual environment you need to activate the correct kernel.
 
 ## Citation
 ```
